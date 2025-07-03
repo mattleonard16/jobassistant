@@ -1,20 +1,66 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import ResumeUploader from "./components/ResumeUploader";
 import JobTable from "./components/JobTable";
+import GenerationModal from "./components/GenerationModal";
+
+interface Job {
+  id: string;
+  title: string;
+  company?: string;
+  location?: string;
+  score?: number | null;
+  url?: string;
+}
 
 function App() {
-  const [jobs, setJobs] = useState([]);
+  const [status, setStatus] = useState<string>("Loading...");
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [genBullets, setGenBullets] = useState("");
+  const [genCover, setGenCover] = useState("");
 
-  // TODO: fetch jobs from `/jobs` endpoint and store in state
   useEffect(() => {
-    // fetchJobs();
+    fetch("/api/health")
+      .then((res) => res.json())
+      .then((data) => setStatus(data.status))
+      .catch(() => setStatus("offline"));
+
+    fetchJobs();
   }, []);
 
+  const fetchJobs = async () => {
+    const res = await fetch("/api/jobs");
+    if (res.ok) {
+      setJobs(await res.json());
+    }
+  };
+
+  const handleGenerate = async (job: Job) => {
+    const res = await fetch(`/api/jobs/generate/${job.id}`, { method: "POST" });
+    if (!res.ok) {
+      alert("Generation failed");
+      return;
+    }
+    const data = await res.json();
+    setGenBullets(data.bullets);
+    setGenCover(data.cover_letter);
+    setModalVisible(true);
+  };
+
   return (
-    <div className="p-6 font-sans">
-      <h1 className="text-2xl font-bold mb-4">AI Job‑App Assistant</h1>
-      {/* TODO: add Upload Résumé button + status */}
-      <JobTable jobs={jobs} />
-    </div>
+    <main style={{ fontFamily: "sans-serif", padding: "2rem" }}>
+      <h1>AI Job-App Assistant</h1>
+      <p>Backend status: {status}</p>
+      <ResumeUploader />
+      <JobTable jobs={jobs} onGenerate={handleGenerate} />
+      <GenerationModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        bullets={genBullets}
+        coverLetter={genCover}
+      />
+    </main>
   );
 }
+
 export default App;

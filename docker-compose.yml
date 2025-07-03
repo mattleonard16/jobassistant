@@ -1,38 +1,64 @@
 version: "3.9"
+
 services:
   postgres:
-    image: postgres:16
+    image: pgvector/pgvector:pg16
     environment:
-      POSTGRES_USER: app
-      POSTGRES_PASSWORD: app
-      POSTGRES_DB: appdb
-    volumes:
-      - db_data:/var/lib/postgresql/data
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: app
     ports:
       - "5432:5432"
-
-  api:
-    build: ./backend
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     volumes:
-      - ./backend:/code
-    environment:
-      - DATABASE_URL=postgresql+asyncpg://app:app@postgres/appdb
-      - OPENAI_API_KEY=
-    depends_on:
-      - postgres
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    volumes:
+      - ./backend:/app/backend
     ports:
       - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/app
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      - postgres
 
   frontend:
-    build: ./frontend
-    command: npm run dev -- --host 0.0.0.0
+    image: node:20-alpine
+    working_dir: /app/frontend
     volumes:
-      - ./frontend:/app
+      - ./frontend:/app/frontend
+    command: sh -c "npm install --frozen-lockfile && npm run dev -- --host 0.0.0.0"
     ports:
       - "5173:5173"
     depends_on:
-      - api
+      - backend
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  worker:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    command: celery -A backend.tasks worker -B --loglevel=info
+    volumes:
+      - ./backend:/app/backend
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/app
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
 
 volumes:
-  db_data:
+  pgdata:

@@ -1,7 +1,10 @@
 fastapi
 uvicorn[standard]
-openai
-playwright
-asyncpg
-pgvector
 python-dotenv
+sqlmodel
+pgvector
+psycopg2-binary
+openai>=1.14.3
+pdfplumber
+celery[redis]
+playwright
