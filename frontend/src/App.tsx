@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import ResumeUploader from "./components/ResumeUploader";
 import JobTable from "./components/JobTable";
 import GenerationModal from "./components/GenerationModal";
