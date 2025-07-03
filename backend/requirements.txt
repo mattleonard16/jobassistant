@@ -1,0 +1,7 @@
+fastapi
+uvicorn[standard]
+openai
+playwright
+asyncpg
+pgvector
+python-dotenv
