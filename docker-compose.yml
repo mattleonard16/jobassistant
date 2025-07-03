@@ -25,7 +25,6 @@ services:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/app
       - OPENAI_API_KEY=${OPENAI_API_KEY}
     depends_on:
-      - backend
       - postgres
 
   frontend:
@@ -38,6 +37,28 @@ services:
       - "5173:5173"
     depends_on:
       - backend
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  worker:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    command: celery -A backend.tasks worker -B --loglevel=info
+    volumes:
+      - ./backend:/app/backend
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/app
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
 
 volumes:
   pgdata:

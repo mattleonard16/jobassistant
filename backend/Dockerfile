@@ -4,7 +4,8 @@ WORKDIR /app
 
 # Install dependencies
 COPY backend/requirements.txt ./requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt \
+    && playwright install --with-deps
 
 # Copy application code
 COPY backend ./backend

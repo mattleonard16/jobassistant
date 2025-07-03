@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 
 function ResumeUploader() {
   const [file, setFile] = useState<File | null>(null);

@@ -1,9 +1,9 @@
 from fastapi import FastAPI
-import os
 from backend.db import init_db, get_session
 from fastapi import Depends
 from sqlmodel import Session
 from backend.routes import resume as resume_router
+from backend.routes import scrape as scrape_router
 
 app = FastAPI(title="AI Job-App Assistant")
 
@@ -29,6 +29,7 @@ def list_jobs(session: Session = Depends(get_session)):
 
 
 app.include_router(resume_router.router)
+app.include_router(scrape_router.router)
 
 
 if __name__ == "__main__":

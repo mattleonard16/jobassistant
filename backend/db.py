@@ -24,14 +24,22 @@ class BaseModel(SQLModel):
     )
 
 
+class Company(BaseModel, table=True):
+    __tablename__ = "companies"
+
+    name: str
+    careers_url: str
+
+
 class Job(BaseModel, table=True):
     __tablename__ = "jobs"
 
+    company_id: uuid.UUID | None = Field(foreign_key="companies.id", index=True)
     title: str
-    company: str | None = None
+    location: str | None = None
     url: str | None = None
     description: str | None = None
-    posted_date: str | None = None  # store as ISO date string for now
+    posted_date: str | None = None  # ISO date string
     embedding: list[float] | None = Field(
         sa_column_kwargs={"nullable": True},
         sa_column=Vector(1536),
