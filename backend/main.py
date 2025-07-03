@@ -1,9 +1,8 @@
 from fastapi import FastAPI
-from backend.db import init_db, get_session
-from fastapi import Depends
-from sqlmodel import Session
+from backend.db import init_db
 from backend.routes import resume as resume_router
 from backend.routes import scrape as scrape_router
+from backend.routes import jobs as jobs_router
 
 app = FastAPI(title="AI Job-App Assistant")
 
@@ -19,17 +18,9 @@ def on_startup():
     init_db()
 
 
-@app.get("/jobs", tags=["Jobs"])
-def list_jobs(session: Session = Depends(get_session)):
-    """Temporary endpoint to verify DB connectivity."""
-    from backend.db import Job
-
-    jobs = session.query(Job).limit(10).all()
-    return jobs
-
-
 app.include_router(resume_router.router)
 app.include_router(scrape_router.router)
+app.include_router(jobs_router.router)
 
 
 if __name__ == "__main__":
