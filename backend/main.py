@@ -3,6 +3,7 @@ import os
 from backend.db import init_db, get_session
 from fastapi import Depends
 from sqlmodel import Session
+from backend.routes import resume as resume_router
 
 app = FastAPI(title="AI Job-App Assistant")
 
@@ -25,6 +26,9 @@ def list_jobs(session: Session = Depends(get_session)):
 
     jobs = session.query(Job).limit(10).all()
     return jobs
+
+
+app.include_router(resume_router.router)
 
 
 if __name__ == "__main__":

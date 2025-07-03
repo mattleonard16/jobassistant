@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import ResumeUploader from "./components/ResumeUploader";
 
 function App() {
   const [status, setStatus] = useState<string>("Loading...");
@@ -14,6 +15,7 @@ function App() {
     <main style={{ fontFamily: "sans-serif", padding: "2rem" }}>
       <h1>AI Job-App Assistant</h1>
       <p>Backend status: {status}</p>
+      <ResumeUploader />
     </main>
   );
 }

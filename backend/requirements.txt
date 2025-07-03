@@ -4,3 +4,5 @@ python-dotenv
 sqlmodel
 pgvector
 psycopg2-binary
+openai>=1.14.3
+pdfplumber
